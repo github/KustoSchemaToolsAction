@@ -1,0 +1,82 @@
+name: Rollout Database Scripts
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'schema/**'
+  workflow_dispatch:
+
+
+permissions:
+  id-token: write
+  contents: read
+  packages: read
+
+jobs:
+  get-changed-directories:
+    runs-on: ubuntu-latest
+    outputs:
+      any_changed: ${{ steps.get-changed-directories.outputs.any_changed }}
+      changed_directories: ${{ steps.set-matrix-changed-directories.outputs.changed_directories }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Get changed directories
+        id: get-changed-directories
+        uses: tj-actions/changed-files@v37.3.0
+        with:
+          files: |
+            kusto/**/*.{yml,yaml,kql}
+          dir_names: 'true'
+          dir_names_max_depth: '3'
+      - name: Create matrix array of changed directories
+        if: steps.get-changed-directories.outputs.any_changed == 'true'
+        id: set-matrix-changed-directories
+        run: |
+          echo "One or more configuration directories have changed."
+          echo "Changed configuration directories: ${{ steps.get-changed-directories.outputs.all_changed_files }}"
+          cdirs=$(echo ${{ steps.get-changed-directories.outputs.all_changed_files }} | tr ' ' '\n' | sed 's/.*/"&"/' | paste -s -d ',' - | sed 's/.*/[&]/' | sed 's/,/, /g')
+          echo "changed_directories=${cdirs}" >> "$GITHUB_OUTPUT"
+  # This is the new job, only runs on changed directories.
+  sync-dynamic-workflows:
+    name: Apply
+    if: |
+        needs.get-changed-directories.outputs.any_changed == 'true' && 
+        vars.LEGACY_SYNC_MODE == 'false'
+    runs-on: ubuntu-latest
+    needs: get-changed-directories
+    container:
+      image: ghcr.io/github/KustoSchemaToolsAction:main
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    strategy:
+      matrix: 
+        directory: ${{ fromJSON(needs.get-changed-directories.outputs.changed_directories) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: 'Azure OIDC Login'
+        uses: azure/login@v1
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID_OIDC }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID_OIDC }}
+          allow-no-subscriptions: true
+      - name: Set variables      
+        shell: bash
+        run: |
+          IFS='/' read -ra DIR <<< ${{ matrix.directory }}
+          echo "CLUSTER=${DIR[1]}" >> $GITHUB_ENV          
+          echo "DATABASE=${DIR[2]}" >> $GITHUB_ENV
+      - name: Apply changes to database
+        uses: ./.github/actions/KustoSchemaTools
+        id: KustoSchemaTools
+        with:        
+          mode: apply
+          path: kusto
+          cluster: ${{ env.CLUSTER }}
+          database: ${{ env.DATABASE }}
+
+        

@@ -1,0 +1,43 @@
+name: 'Schema Sync'
+description: 'This actions syncs Kusto schemas between databases and folders'
+branding:
+  icon: activity
+  color: orange
+inputs:
+  mode:
+    description:
+      'The mode how the action should work: "diff", "import", "apply".'
+    required: true
+  path:
+    description:
+      'The base path for all Kusto configurations.'
+    required: true
+  cluster:
+    description:
+      'The cluster / deployment configuration for the rollout".'
+    required: true
+  database:
+    description: 'The database.'
+  extract_columns:
+    description: 'Flag if columns are included for the import.'
+    required: false
+    default: 'false'
+outputs:
+  diff:
+    description: 'The diff for the databases, contains markDown and is_valid in json format'
+runs:
+  using: 'docker'
+  image: 'ghcr.io/github/KustoSchemaToolsAction:main'
+  entrypoint: 'dotnet'
+  args:
+  - '/app/KustoSchemaCli.dll'
+  - '-m'
+  - ${{ inputs.mode }}
+  - '-p'
+  - ${{ inputs.path }}
+  - '-c'
+  - ${{ inputs.cluster }}
+  - '-d'
+  - ${{ inputs.database }}
+  - '-i'
+  - ${{ inputs.extract_columns }}

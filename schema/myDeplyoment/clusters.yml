@@ -1,0 +1,3 @@
+connections:
+- name: myConnection
+  url: testCluster.eastus
