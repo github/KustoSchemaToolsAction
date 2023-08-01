@@ -1,0 +1,3 @@
+[submodule "KustoSchemaTools"]
+	path = KustoSchemaTools
+	url = https://github.com/github/KustoSchemaTools
