@@ -17,6 +17,7 @@ on:
         type: boolean
         required: false
         default: false
+        
 permissions:
   id-token: write
   contents: write
