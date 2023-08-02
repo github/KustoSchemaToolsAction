@@ -1,0 +1,89 @@
+name: Import Kusto Database
+
+on:
+  workflow_dispatch:
+    inputs:
+      cluster:
+        description: 'Kusto Cluster'
+        required: true
+        type: choice
+        options:
+          - "myDeployment"
+      databases:
+        description: 'Kusto Databases'
+        required: true
+      extract_columns:
+        description: 'Include Table Columns'
+        type: boolean
+        required: false
+        default: false
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+  packages: read
+
+jobs:
+  extract_configuration:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/github/KustoSchemaToolsAction:main
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    name: Import
+    steps:
+      - name: Print Parameters
+        run: |
+          echo "Cluster URI: ${{ github.event.inputs.cluster }}"
+          echo "Databases: ${{ github.event.inputs.databases }}"
+          echo "Extract Columns: ${{ github.event.inputs.extract_columns }}"
+
+      - uses: actions/checkout@v3
+        name: Checkout
+
+      - name: Get Current Date
+        id: date
+        run: |
+          echo "builddate=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: Setup Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      - name: 'Azure OIDC Login'
+        uses: azure/login@v1
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID_OIDC }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID_OIDC }}
+          allow-no-subscriptions: true
+      - name: Import database
+        uses: ./.github/actions/KustoSchemaTools
+        id: KustoSchemaTools
+        with:        
+          mode: import
+          path: kusto
+          cluster: ${{ github.event.inputs.cluster }}
+          database: ${{ github.event.inputs.databases }}
+          extract_columns:  ${{ github.event.inputs.extract_columns }}    
+
+      - name: Create Pull Request
+        env:
+          CURRDATE: ${{ steps.date.outputs.builddate }}
+        id: cpr
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: Extract Kusto Configuration ${{ github.event.inputs.cluster }}
+          committer: GitHub <noreply@github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          signoff: false
+          branch: extract/${{ github.event.inputs.cluster }}_${{ steps.date.outputs.builddate }}
+          delete-branch: true
+          title: '[Extract Configuration] ${{ github.event.inputs.cluster }} (${{ steps.date.outputs.builddate }})'
+          body: |
+            Automated cluster configuration extraction
+            - Cluster URI: ${{ github.event.inputs.cluster }}
+            - Databases: ${{ github.event.inputs.databases }}
+            - Extract Columns: ${{ github.event.inputs.extract_columns }}
+            - Date: ${{ steps.date.outputs.builddate }}
+          draft: false
