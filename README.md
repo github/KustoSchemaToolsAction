@@ -22,7 +22,7 @@ KustoSchemaTools uses plugins for reading the and writing the schema from or to 
 
 The easiest way to add your own logic is to 
 1. [Fork](fork) this repository 
-1. Implement your own plugins ([examle](KustoSchmeCLI/Plugins/TableGroupPlugin.cs))
+1. Implement your own plugins ([examle](KustoSchemaCLI/Plugins/TableGroupPlugin.cs))
 1. Register them in the [Program.cs](https://github.com/github/KustoSchemaToolsAction/blob/main/KustoSchemaCLI/Program.cs#L15)
 1. Build your own docker container ([workflow](.github/workflows/publish_image.yml))
 1. Add the definition of your [action](workflows/action.yaml) if required.
