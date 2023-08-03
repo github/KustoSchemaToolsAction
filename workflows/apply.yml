@@ -6,7 +6,6 @@ on:
       - 'schema/**'
   workflow_dispatch:
 
-
 permissions:
   id-token: write
   contents: read
