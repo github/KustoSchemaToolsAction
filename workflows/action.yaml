@@ -30,7 +30,7 @@ runs:
   image: 'ghcr.io/github/KustoSchemaToolsAction:main'
   entrypoint: 'dotnet'
   args:
-  - '/app/KustoSchemaCli.dll'
+  - '/app/KustoSchemaCLI.dll'
   - '-m'
   - ${{ inputs.mode }}
   - '-p'
