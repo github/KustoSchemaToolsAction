@@ -10,7 +10,6 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 
 COPY ["/KustoSchemaCLI/KustoSchemaCLI.csproj", "KustoSchemaCLI/"]
-COPY ["/KustoSchemaTools/KustoSchemaTools/KustoSchemaTools.csproj", "KustoSchemaTools/"]
 RUN dotnet restore "KustoSchemaCLI/KustoSchemaCLI.csproj"
 COPY . .
 
