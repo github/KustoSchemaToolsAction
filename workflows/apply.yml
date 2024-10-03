@@ -33,10 +33,12 @@ jobs:
       - name: Create matrix array of changed directories
         if: steps.get-changed-directories.outputs.any_changed == 'true'
         id: set-matrix-changed-directories
+        env:
+          ALL_CHANGED_FILES: ${{ steps.get-changed-directories.outputs.all_changed_files }}
         run: |
           echo "One or more configuration directories have changed."
           echo "Changed configuration directories: ${{ steps.get-changed-directories.outputs.all_changed_files }}"
-          cdirs=$(echo ${{ steps.get-changed-directories.outputs.all_changed_files }} | tr ' ' '\n' | sed 's/.*/"&"/' | paste -s -d ',' - | sed 's/.*/[&]/' | sed 's/,/, /g')
+          cdirs=$(echo $ALL_CHANGED_FILES | tr ' ' '\n' | sed 's/.*/"&"/' | paste -s -d ',' - | sed 's/.*/[&]/' | sed 's/,/, /g')
           echo "changed_directories=${cdirs}" >> "$GITHUB_OUTPUT"
   # This is the new job, only runs on changed directories.
   sync-dynamic-workflows:
