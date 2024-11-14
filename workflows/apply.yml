@@ -24,7 +24,7 @@ jobs:
           fetch-depth: 0
       - name: Get changed directories
         id: get-changed-directories
-        uses: tj-actions/changed-files@v41
+        uses: tj-actions/changed-files@cbda684547adc8c052d50711417fa61b428a9f88
         with:
           files: |
             kusto/**/*.{yml,yaml,kql}
