@@ -1,6 +1,6 @@
 # KustoSchemaToolsAction
 
-This tool can be used to synchronized your schema from Azure Data Explorer (Kusto) cluster to yml files in a GitHub repository and back, using GitHub Actions.
+This tool can be used to synchronize your schema from Azure Data Explorer (Kusto) cluster to yml files in a GitHub repository and back, using GitHub Actions.
 
 ## Getting Started
 
@@ -14,15 +14,15 @@ This tool can be used to synchronized your schema from Azure Data Explorer (Kust
 1. The diffs will be posted as PR comment
 1. Merge the PR to roll out the changes to your Azure Data Explorer (Kusto) cluster
 
-This project can be used as it is and doesn't require customizations. In the repo 
+This project can be used as it is and doesn't require customizations.
 
 ## Adding custom behavior
 
-KustoSchemaTools uses plugins for reading the and writing the schema from or to a database or yaml file. You can find more docs on that in the [KustoSchemaTools repo](https://github.com/github/KustoSchemaTools). 
+KustoSchemaTools uses plugins for reading and writing the schema from or to a database or yaml file. You can find more docs on that in the [KustoSchemaTools repo](https://github.com/github/KustoSchemaTools). 
 
 The easiest way to add your own logic is to 
 1. [Fork](fork) this repository 
-1. Implement your own plugins ([examle](KustoSchemaCLI/Plugins/TableGroupPlugin.cs))
+1. Implement your own plugins ([example](KustoSchemaCLI/Plugins/TableGroupPlugin.cs))
 1. Register them in the [Program.cs](https://github.com/github/KustoSchemaToolsAction/blob/main/KustoSchemaCLI/Program.cs#L15)
 1. Build your own docker container ([workflow](.github/workflows/publish_image.yml))
 1. Add the definition of your [action](workflows/action.yaml) if required.
