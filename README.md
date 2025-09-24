@@ -1,3 +1,5 @@
+This repository is no longer supported.
+
 # KustoSchemaToolsAction
 
 This tool can be used to synchronize your schema from Azure Data Explorer (Kusto) cluster to yml files in a GitHub repository and back, using GitHub Actions.
